@@ -36,11 +36,9 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="basicOCR.cpp" />
-		<Unit filename="basicOCR.h" />
+		<Unit filename="OCR.cpp" />
+		<Unit filename="OCR.h" />
 		<Unit filename="main.cpp" />
-		<Unit filename="preprocessing.cpp" />
-		<Unit filename="preprocessing.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

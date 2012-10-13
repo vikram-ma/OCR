@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1341172530 source:/home/vikram/Projects/test/testBasicOCR/basicOCR.cpp
+1349106876 source:/home/vikram/Projects/test/testBasicOCR/basicOCR.cpp
 	"cv.h"
 	"highgui.h"
 	"ml.h"
@@ -406,19 +406,21 @@
 	<stdio.h>
 	<ctype.h>
 
-1341172530 /home/vikram/Projects/test/testBasicOCR/basicOCR.h
+1349106241 /home/vikram/Projects/test/testBasicOCR/basicOCR.h
 	<cv.h>
 	<highgui.h>
 	<ml.h>
 	<stdio.h>
 	<ctype.h>
+	<iostream>
+	<fstream>
 
-1341172530 source:/home/vikram/Projects/test/testBasicOCR/main.cpp
+1349878302 source:/home/vikram/Projects/test/testBasicOCR/main.cpp
 	<cv.h>
 	<highgui.h>
 	<stdio.h>
 	<ctype.h>
-	"basicOCR.h"
+	"OCR.h"
 
 1341172530 source:/home/vikram/Projects/test/testBasicOCR/preprocessing.cpp
 	"preprocessing.h"
@@ -427,4 +429,17 @@
 	<stdio.h>
 	<ctype.h>
 	<math.h>
+
+1349878265 source:/home/vikram/Projects/test/testBasicOCR/OCR.cpp
+	"OCR.h"
+
+1349710670 /home/vikram/Projects/test/testBasicOCR/OCR.h
+	<cv.h>
+	<highgui.h>
+	<ml.h>
+	<stdio.h>
+	<ctype.h>
+	<iostream>
+	<fstream>
+	"opencv2/imgproc/imgproc.hpp"
 
