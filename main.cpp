@@ -7,7 +7,7 @@
 #include <highgui.h>
 #include <stdio.h>
 #include <ctype.h>
-#include "basicOCR.h"
+#include "OCR.h"
 #endif
 
 IplImage* imagen;
@@ -34,7 +34,7 @@ void drawCursor(int x, int y){
 
 /*************************
 * Mouse CallBack
-* event: 
+* event:
 *	#define CV_EVENT_MOUSEMOVE      0
 *	#define CV_EVENT_LBUTTONDOWN    1
 *	#define CV_EVENT_RBUTTONDOWN    2
@@ -85,6 +85,7 @@ void on_mouse( int event, int x, int y, int flags, void* param )
 
 int main( int argc, char** argv )
 {
+    IplImage* imagev = cvLoadImage("../sampleUppercase.pbm", 0);
     printf( "Basic OCR by David Millan Escriva | Damiles\n"
 		"Hot keys: \n"
 	"\tr - reset image\n"
@@ -93,61 +94,62 @@ int main( int argc, char** argv )
 	"\ts - Save image as out.png\n"
 	"\tc - Classify image, the result in console\n"
         "\tESC - quit the program\n");
-	drawing=0;
-	r=10;
-	red=green=blue=0;
-	last_x=last_y=red=green=blue=0;
-	//Create image
-	imagen=cvCreateImage(cvSize(128,128),IPL_DEPTH_8U,1);
-	//Set data of image to white
-	cvSet(imagen, CV_RGB(255,255,255),NULL);
-	//Image we show user with cursor and other artefacts we need
-	screenBuffer=cvCloneImage(imagen);
-	
-	//Create window
-    	cvNamedWindow( "Demo", 0 );
-
-	cvResizeWindow("Demo", 128,128);
-	//Create mouse CallBack
-	cvSetMouseCallback("Demo",&on_mouse, 0 );
-
+//	drawing=0;
+//	r=10;
+//	red=green=blue=0;
+//	last_x=last_y=red=green=blue=0;
+//	//Create image
+//	imagen=cvCreateImage(cvSize(128,128),IPL_DEPTH_8U,1);
+//	//Set data of image to white
+//	cvSet(imagen, CV_RGB(255,255,255),NULL);
+//	//Image we show user with cursor and other artefacts we need
+//	screenBuffer=cvCloneImage(imagen);
+//
+//	//Create window
+//    	cvNamedWindow( "Demo", 0 );
+//
+//	cvResizeWindow("Demo", 128,128);
+//	//Create mouse CallBack
+//	cvSetMouseCallback("Demo",&on_mouse, 0 );
+//
 
 	//////////////////
 	//My OCR
 	//////////////////
-	basicOCR ocr;
-	
+	OCR ocr("../OCR/", 52, 3);
+	ocr.classify(imagev, 1);
+
 	//Main Loop
-    for(;;)
-    {
-		int c;
-
-        cvShowImage( "Demo", screenBuffer );
-        c = cvWaitKey(10);
-        if( (char) c == 27 )
-            break;
-	if( (char) c== '+' ){
-		r++;
-		drawCursor(last_x,last_y);
-	}
-	if( ((char)c== '-') && (r>1) ){
-		r--;
-		drawCursor(last_x,last_y);
-	}
-	if( (char)c== 'r'){
-		cvSet(imagen, cvRealScalar(255),NULL);
-		drawCursor(last_x,last_y);
-	}
-	if( (char)c== 's'){
-		cvSaveImage("out.png", imagen);
-	}
-	if( (char)c=='c'){
-		ocr.classify(imagen,1);
-	}
-		
-    }
-
-    cvDestroyWindow("Demo");
+//    for(;;)
+//    {
+//		int c;
+//
+//        cvShowImage( "Demo", screenBuffer );
+//        c = cvWaitKey(10);
+//        if( (char) c == 27 )
+//            break;
+//	if( (char) c== '+' ){
+//		r++;
+//		drawCursor(last_x,last_y);
+//	}
+//	if( ((char)c== '-') && (r>1) ){
+//		r--;
+//		drawCursor(last_x,last_y);
+//	}
+//	if( (char)c== 'r'){
+//		cvSet(imagen, cvRealScalar(255),NULL);
+//		drawCursor(last_x,last_y);
+//	}
+//	if( (char)c== 's'){
+//		cvSaveImage("out.png", imagen);
+//	}
+//	if( (char)c=='c'){
+//		ocr.classify(imagen,1);
+//	}
+//
+//    }
+//
+//    cvDestroyWindow("Demo");
 
     return 0;
 }
