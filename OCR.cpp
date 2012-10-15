@@ -329,7 +329,7 @@ IplImage OCR::preprocessing(IplImage* imgSrc,int new_width, int new_height, int 
 	//TODO: here x and y can be replaced by 0!
 
 
-	cvGetSubRect(result, &dataA, cvRect(0,0,bb.width, bb.height));
+	cvGetSubRect(result, &dataA, cvRect(x,y,bb.width, bb.height));
 	//cout << "Got 2nd sub rect" << endl;
 
 	cvCopy(&data, &dataA, NULL);
@@ -340,6 +340,33 @@ IplImage OCR::preprocessing(IplImage* imgSrc,int new_width, int new_height, int 
 	scaledResult=cvCreateImage( cvSize( new_width, new_height ), 8, 1 );
 	cvResize(result, scaledResult, CV_INTER_NN);
 
+//	CvPoint pt1,pt2;
+//	pt1.x = 0;
+//	pt1.y = 0;
+//	pt2.x = 0;
+//	pt1.y = result->height;
+//	cvLine(result, pt1, pt2, CV_RGB(0, 0, 0));
+//
+//	pt1.x = bb.width;
+//	pt2.x = bb.width;
+//
+//    cvLine(result, pt1, pt2, CV_RGB(0, 0, 0));
+//
+//    pt1.x = 0;
+//    pt1.y = 0;
+//    pt2.x = result->width;
+//    pt2.y = 0;
+//
+//    cvLine(result, pt1, pt2, CV_RGB(0, 0, 0));
+//
+//    pt1.y = bb.height;
+//    pt2.y = bb.height;
+//    cvLine(result, pt1, pt2, CV_RGB(0, 0, 0));
+//
+//	cvNamedWindow("scaled result", CV_WINDOW_AUTOSIZE);
+//    cvShowImage("scaled result",result);
+//
+//    cvWaitKey(0);
 
 	//Return processed data
 	if(printResult == 1)
@@ -379,8 +406,14 @@ void OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int pr
             }
             else if(minYFound == 1)
             {
-                //cout << "Rows has been processed min Y " << minY << " maxY " << maxY << endl;
+                cout << "Rows has been processed min Y " << minY << " maxY " << maxY << endl;
+//CvPoint p1,p2;
+//p1.x = 0;
+//p1.y = minY;
+//p2.x = imgSrc->width;
+//p2.y = maxY;
 
+//cvLine(imgSrc, p1, p2, CV_RGB(0, 0, 0));
 
                 //some data was found previously, but current row 'i' doesn't have any data.
                 //So process from row 'minY' till row maxY
@@ -396,7 +429,7 @@ void OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int pr
                 {
                     //cout<<"Current value of j "<< j << endl;
                     valx=cvRealScalar(0);
-                    //instead of taking sum of entire column get sum or sub part of it.
+                    //instead of taking sum of entire column get sum of sub part of it.
                     cvGetSubRect(imgSrc,&data, cvRect(j,minY,1,maxY-minY));
                     //cvGetCol(imgSrc, &data, i);
                     valx= cvSum(&data);
@@ -411,12 +444,39 @@ void OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int pr
                     else if(minXFound == 1)
                     {
                         //printf("minX = %d, maxX = %d\n", minX, maxX);
-                        //cout<< "Column has been processed minX " << minX <<" maxX "<< maxX << endl;
+                        cout<< "Column has been processed minX " << minX <<" maxX "<< maxX << endl;
                         //Some data was found previosly but current column 'j' doesn't have any data.
                         // so from minY to maxY and minX to maxX is the bounding box of character!
                         process(imgSrc, new_width, new_height, printResult, cvRect(minX, minY, maxX-minX, maxY-minY));
 
+	CvPoint pt1,pt2;
+	pt1.x = minX;
+	pt1.y = minY;
+	pt2.x = minX;
+	pt2.y = maxY;
+	cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
 
+	pt1.x = maxX;
+	pt2.x = maxX;
+
+    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
+
+    pt1.x = minX;
+    pt1.y = minY;
+    pt2.x = maxX;
+    pt2.y = minY;
+
+    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
+
+    pt1.y = maxY;
+    pt2.y = maxY;
+    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
+
+	cvNamedWindow("scaled result", CV_WINDOW_AUTOSIZE);
+    cvShowImage("scaled result",imgSrc);
+
+    cvWaitKey(0);
+//    cvDestroyWindow("scaled result");
                         //cvRectangle(imgSrc,cvPoint1, cvPoint2, CV_RGB(0,0,255), 2);
                         minXFound = 0;
                     }
@@ -454,45 +514,53 @@ void OCR::process(IplImage* imgSrc, int new_width, int new_height, int printResu
 	int size=(bb.width>bb.height)?bb.width:bb.height;
 	result=cvCreateImage( cvSize( size, size ), 8, 1 );
 	cvSet(result,CV_RGB(255,255,255),NULL);
-	//Copy de data in center of image
+	//Copy data to center of image
 	int x=(int)floor((float)(size-bb.width)/2.0f);
 	int y=(int)floor((float)(size-bb.height)/2.0f);
 	//TODO: here x and y can be replaced by 0!
-	cvGetSubRect(result, &dataA, cvRect(x,y,bb.width, bb.height));
+	cvGetSubRect(result, &dataA, cvRect(0,0,bb.width, bb.height));
 	cvCopy(&data, &dataA, NULL);
 	//Scale result
 	scaledResult=cvCreateImage( cvSize( new_width, new_height ), 8, 1 );
 	cvResize(result, scaledResult, CV_INTER_NN);
 
+
 CvPoint cvP1;
                 CvPoint cvP2;
-                cvP1.x = 0;
-                cvP1.y = 0;
-                cvP2.x = result->width;
-                cvP2.y = 0;
-                cvLine(result, cvP1, cvP2, CV_RGB(0, 0, 0));
-
-                cvP1.y = bb.height;
-                cvP2.y = bb.height;
-                cvLine(result, cvP1, cvP2, CV_RGB(0, 0, 0));
+//                cvP1.x = 0;
+//                cvP1.y = 0;
+//                cvP2.x = 0;
+//                cvP2.y = bb.height;
+//                cvLine(result, cvP1, cvP2, CV_RGB(0, 0, 0));
+//
+//                cvP1.x = bb.width;
+//                cvP2.x = bb.width;
+//                cvLine(result, cvP1, cvP2, CV_RGB(0, 0, 0));
 
                         //(*minX, *minY);
-                        cvP1.x = 0;
-                        cvP1.y = 0;
+                        //cvP1.x = 0;
+                        //cvP1.y = bb.height;
                          //(*maxX, *maxY);
-                        cvP1.x = 0;
-                        cvP1.y = result->height;
-                        cvLine(result, cvP1, cvP2, CV_RGB(0, 0, 0));
+                        //cvP2.x = bb.width;
+                        //cvP1.y = bb.height;
+                        //cvP2.y = bb.height;
+//                        cvLine(result, cvP1, cvP2, CV_RGB(0, 0, 0));
 
-                        cvP1.x = bb.width;
-                        cvP2.x = bb.width ;
-                        cvLine(result, cvP1, cvP2, CV_RGB(0, 0, 0));
+                        //cvP1.y = bb.height;
+                        //cvP2.y = bb.height;
+                        //cvLine(result, cvP1, cvP2, CV_RGB(0, 0, 0));
 
-                        cvNamedWindow("final result", CV_WINDOW_AUTOSIZE);
-                        cvShowImage("final result",result);
+                        //cvNamedWindow("final result", CV_WINDOW_AUTOSIZE);
+                        //cvShowImage("final result",result);
 
-                        cvWaitKey(0);
+                        //cvWaitKey(0);
                         //cvDestroyWindow("final result");
+//
+//                        cvNamedWindow("scaled result", CV_WINDOW_AUTOSIZE);
+//                        cvShowImage("scaled result",scaledResult);
+//
+//                        cvWaitKey(0);
+//                        cvDestroyWindow("scaled result");
 	//Return processed data
 	if(printResult == 1)
 	{
