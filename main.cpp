@@ -116,7 +116,7 @@ int main( int argc, char** argv )
 	//////////////////
 	//My OCR
 	//////////////////
-	OCR ocr("../OCR/", 52, 3);
+	OCR ocr("../OCR/", 26, 3);
 	ocr.classify(imagev, 1);
 
 	//Main Loop
