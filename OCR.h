@@ -3,13 +3,12 @@
  *
  *
  *  Created by damiles on 18/11/08.
- *  Modified by Vikram OCR.h
- *
+ *  Modified by Vikram renamed to OCR.h
+ *  Added new methods.
  */
 
 #ifndef OCR_H_INCLUDED
 #define OCR_H_INCLUDED
-
 
 #ifdef _CH_
 #pragma package <opencv>

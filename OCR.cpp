@@ -3,7 +3,7 @@
  *
  *
  *  Created by damiles on 18/11/08.
- *  Copyright 2008 Damiles. GPL License
+ *  Modified by Vikram renamed to OCR.cpp
  *
  */
 
@@ -11,6 +11,10 @@
 
 #include "OCR.h"
 
+/// <summary>
+///     reads the sample images and associated charaters into trainClasses and trainData respectively.
+/// </summary>
+/// <returns> Nothing. </returns>
 void OCR::getData()
 {
 	IplImage* src_image;
@@ -24,13 +28,14 @@ void OCR::getData()
 	int i,j;
 
 	for(i =0; i<classes; i++){ //26
+	    //Read the corresponding character for current sample being processed into ch.
 	    sprintf(dataFile,"%s%d/data.txt",file_path, i);
 	    labelStream.open(dataFile);
 	    labelStream >> ch;
 	    labelStream.close();
 		for( j = 0; j< train_samples; j++){ //3
-
 			//Load file
+			//get the path of image for training into file.
 			if(j<10)
 				sprintf(file,"%s%d/%d0%d.pbm",file_path, i, i, j);
 
@@ -48,11 +53,9 @@ void OCR::getData()
 			cvSet(&row, cvRealScalar(ch));
 			//Set data
 			cvGetRow(trainData, &row, i*train_samples + j);
-
 			IplImage* img = cvCreateImage( cvSize( size, size ), IPL_DEPTH_32F, 1 );
 			//convert 8 bits image to 32 float image
 			cvConvertScale(&prs_image, img, 0.0039215, 0);
-
 			cvGetSubRect(img, &data, cvRect(0,0, size,size));
 
 			CvMat row_header, *row1;
@@ -63,11 +66,25 @@ void OCR::getData()
 	}
 }
 
+/// <summary>
+///     Trains using trainData and trainClasses using k-nearest algorithm and result is saved in knn.
+/// <summary>
+/// <returns> Nothing. </returns>
 void OCR::train()
 {
 	knn=new CvKNearest( trainData, trainClasses, 0, false, K );
 }
 
+/// <summary>
+///     Classifies the given img and returns the result, if showResult is non-zero then result is printed on std out before returning.
+/// </summary>
+/// <param name="img">
+///     IplImage to be classified.
+/// </param>
+/// <param name="showResult">
+///     If its non-zero then the result is printed onto std out.
+/// </param>
+/// <returns> Result after classifying.  </returns>
 float OCR::classify(IplImage* img, int showResult)
 {
 	float result;
@@ -110,6 +127,18 @@ void OCR::print(IplImage prs_image)
 	printf(" \n---------------------------------------------------------------\n");
 }
 
+/// <summary>
+///     Creates new instance of the OCR class. Trains the k-nearest algorithm with given data.
+/// </summary>
+/// <params name="path">
+///     Relative or absolute path of the directory under which training samples are located.
+/// </params>
+/// <params name="classes">
+///     Number of possible classes into which data can be classified into.
+/// </params>
+/// <params name="samples">
+///     Total number of samples for each class type.
+/// </params>
 OCR::OCR(char* path, int classe, int samples)
 {
 	sprintf(file_path, "%s", path);
@@ -140,6 +169,19 @@ OCR::OCR(char* path, int classe, int samples)
 *
 *******************************************************************/
 
+/// <summary>
+///     Finds min and max X of the data present in given image.
+/// </summary>
+/// <params name="imsSrc">
+///     Source image for which min and max X has to be found.
+/// </params>
+/// <params name="min">
+///     Int pointer where the min X has to saved.
+/// </params>
+/// <params name="max">
+///     Int pointer where the max X has to saved.
+/// </params>
+/// <returns> Nothing. </returns>
 void OCR::findX(IplImage* imgSrc,int* min, int* max)
 {
 	int i;
@@ -166,6 +208,19 @@ void OCR::findX(IplImage* imgSrc,int* min, int* max)
 	}
 }
 
+/// <summary>
+///     Finds min and max Y of the data present in given image.
+/// </summary>
+/// <params name="imsSrc">
+///     Source image for which min and max Y has to be found.
+/// </params>
+/// <params name="min">
+///     Int pointer where the min Y has to saved.
+/// </params>
+/// <params name="max">
+///     Int pointer where the max Y has to saved.
+/// </params>
+/// <returns> Nothing. </returns>
 void OCR::findY(IplImage* imgSrc,int* min, int* max)
 {
 	int i;
@@ -192,6 +247,13 @@ void OCR::findY(IplImage* imgSrc,int* min, int* max)
 	}
 }
 
+/// <summary>
+///     Finds bounding-box of the data present in given image.
+/// </summary>
+/// <params name="imsSrc">
+///     Source image for which bouding box has to be found.
+/// </params>
+/// <returns> Bounding box as CvRect. </returns>
 CvRect OCR::findBB(IplImage* imgSrc){
 	CvRect aux;
 	int xmin, xmax, ymin, ymax;
@@ -204,6 +266,22 @@ CvRect OCR::findBB(IplImage* imgSrc){
 	return aux;
 }
 
+/// <summary>
+///     Given image, finds bounding box, resizes it to new_width and new_height, and if printResult is non-zero, prints result.
+/// </summary>
+/// <params name="imsSrc">
+///     Source image which has to be processed.
+/// </params>
+/// <params name="new_width">
+///     Width of the image to be returned.
+/// </params>
+/// <params name="new_height">
+///     Height of the image to be returned.
+/// </params>
+/// <params name="printResult">
+///     Indicates whether result has be printed, if its non-zero result are printed after running k-neares algorithm.
+/// </params>
+/// <returns> Returns the cropped image from original image measuring bounding box size, resized to new_width and new_height.</returns>
 IplImage OCR::preprocessing(IplImage* imgSrc,int new_width, int new_height, int printResult)
 {
 	IplImage* result;
@@ -212,7 +290,7 @@ IplImage OCR::preprocessing(IplImage* imgSrc,int new_width, int new_height, int 
 	CvMat data;
 	CvMat dataA;
 	CvRect bb;//bounding box
-	CvRect bba;//boundinb box maintain aspect ratio
+	CvRect bba;//bounding box maintain aspect ratio
 
 	//Find bounding box
 	bb=findBB(imgSrc);
@@ -251,6 +329,23 @@ IplImage OCR::preprocessing(IplImage* imgSrc,int new_width, int new_height, int 
 
 }
 
+/// <summary>
+///     Given image with paragraph of characters,
+///     finds bounding box, resizes it to new_width and new_height, and if printResult is non-zero, prints result for each character.
+/// </summary>
+/// <params name="imsSrc">
+///     Source image which has to be processed.
+/// </params>
+/// <params name="new_width">
+///     Width of the image to be used for processing.
+/// </params>
+/// <params name="new_height">
+///     Height of the image to be used for processing.
+/// </params>
+/// <params name="printResult">
+///     Indicates whether result has be printed, if its non-zero result are printed after running k-neares algorithm.
+/// </params>
+/// <returns> Nothing. </returns>
 void OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int printResult)
 {
 	int minY, maxY;
@@ -366,6 +461,24 @@ void OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int pr
 
 }
 
+/// <summary>
+///     Given image single character and bounding box,
+///     resizes it to new_width and new_height, and if printResult is non-zero, prints result for each character after running
+///     k-nearest algorithm.
+/// </summary>
+/// <params name="imsSrc">
+///     Source image which has to be processed.
+/// </params>
+/// <params name="new_width">
+///     Width to which image has to be resized before running k-nearest algorithm in it.
+/// </params>
+/// <params name="new_height">
+///     Height to which image has to be resized before running k-nearest algorithm in it.
+/// </params>
+/// <params name="printResult">
+///     Indicates whether result has be printed, if its non-zero result are printed after running k-neares algorithm.
+/// </params>
+/// <returns> Nothing. </returns>
 void OCR::process(IplImage* imgSrc, int new_width, int new_height, int printResult, CvRect bb)
 {
     IplImage* result;
