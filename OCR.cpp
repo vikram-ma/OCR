@@ -109,36 +109,6 @@ void OCR::print(IplImage prs_image)
 
 	printf(" \n---------------------------------------------------------------\n");
 }
-void OCR::test(){
-	IplImage* src_image;
-	IplImage prs_image;
-	CvMat row,data;
-	char file[255];
-	int i,j;
-	int error=0;
-	int testCount=0;
-	for(i =0; i<classes; i++){
-		for( j = 50; j< 50+train_samples; j++){
-
-			sprintf(file,"%s%d/%d%d.pbm",file_path, i, i , j);
-			src_image = cvLoadImage(file,0);
-			if(!src_image){
-				printf("Error: Cant load image %s\n", file);
-				//exit(-1);
-			}
-			//process file
-			prs_image = preprocessing(src_image, size, size);
-			float r=classify(&prs_image,0);
-			if((int)r!=i)
-				error++;
-
-			testCount++;
-		}
-	}
-	float totalerror=100*(float)error/(float)testCount;
-	printf("System Error: %.2f%%\n", totalerror);
-
-}
 
 OCR::OCR(char* path, int classe, int samples)
 {
@@ -169,10 +139,9 @@ OCR::OCR(char* path, int classe, int samples)
 * The image is a binary data and background is white.
 *
 *******************************************************************/
+
 void OCR::findX(IplImage* imgSrc,int* min, int* max)
 {
-
-    //cout << "Finding X" << endl;
 	int i;
 	int minFound=0;
 	CvMat data;
@@ -199,7 +168,6 @@ void OCR::findX(IplImage* imgSrc,int* min, int* max)
 
 void OCR::findY(IplImage* imgSrc,int* min, int* max)
 {
-    //cout << "Finding Y" << endl;
 	int i;
 	int minFound=0;
 	CvMat data;
@@ -321,7 +289,6 @@ void OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int pr
                 //then continue to end to search the max, if sum< width*255 then is new max
                 for (j=0; j< imgSrc->width - 1; j++)
                 {
-                    //cout<<"Current value of j "<< j << endl;
                     valx=cvRealScalar(0);
                     //instead of taking sum of entire column get sum of sub part of it.
                     cvGetSubRect(imgSrc,&data, cvRect(j,minY,1,maxY-minY));
@@ -341,7 +308,6 @@ void OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int pr
 
                         CvScalar maxValyS = cvRealScalar((maxX-minX)*255);
                         CvScalar valyS = cvRealScalar(0);
-                        //cout<< "Column has been processed minX " << minX <<" maxX "<< maxX << endl;
                         // from minx to maxx and miny to maxy
                         for(int k=maxY-1; k >= minY; k--)
                         {
@@ -407,7 +373,7 @@ void OCR::process(IplImage* imgSrc, int new_width, int new_height, int printResu
 
 	CvMat data;
 	CvMat dataA;
-	CvRect bba;//boundinb box maintain aspect ratio
+	CvRect bba;//bounding box maintain aspect ratio.
 
 	//Get bounding box data and no with aspect ratio, the x and y can be corrupted
 	cvGetSubRect(imgSrc, &data, cvRect(bb.x, bb.y, bb.width, bb.height));
@@ -419,7 +385,8 @@ void OCR::process(IplImage* imgSrc, int new_width, int new_height, int printResu
 	//Copy data to center of image
 	int x=(int)floor((float)(size-bb.width)/2.0f);
 	int y=(int)floor((float)(size-bb.height)/2.0f);
-	//TODO: here x and y can be replaced by 0!
+
+	//Get center of the result into dataA.
 	cvGetSubRect(result, &dataA, cvRect(x,y,bb.width, bb.height));
 	cvCopy(&data, &dataA, NULL);
 	//Scale result

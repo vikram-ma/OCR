@@ -3,7 +3,7 @@
  *
  *
  *  Created by damiles on 18/11/08.
- *  Copyright 2008 __MyCompanyName__. All rights reserved.
+ *  Modified by Vikram OCR.h
  *
  */
 
