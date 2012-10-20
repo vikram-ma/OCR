@@ -14,7 +14,7 @@ int main( int argc, char** argv )
 	//My OCR
 	//////////////////
 	int* size = new int[1];
-	OCR ocr("../OCR/", 52, 3);
+	OCR ocr("./OCR/", 52, 3);
 	ocr.classify(imagev, 1, size);
     return 0;
 }
