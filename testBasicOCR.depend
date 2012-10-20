@@ -415,11 +415,8 @@
 	<iostream>
 	<fstream>
 
-1350310303 source:/home/vikram/Projects/test/testBasicOCR/main.cpp
+1350758470 source:/home/vikram/Projects/test/testBasicOCR/main.cpp
 	<cv.h>
-	<highgui.h>
-	<stdio.h>
-	<ctype.h>
 	"OCR.h"
 
 1341172530 source:/home/vikram/Projects/test/testBasicOCR/preprocessing.cpp
@@ -430,16 +427,16 @@
 	<ctype.h>
 	<math.h>
 
-1350737925 source:/home/vikram/Projects/test/testBasicOCR/OCR.cpp
+1350754442 source:/home/vikram/Projects/test/testBasicOCR/OCR.cpp
+	<vector>
 	"OCR.h"
 
-1350738534 /home/vikram/Projects/test/testBasicOCR/OCR.h
+1350754397 /home/vikram/Projects/test/testBasicOCR/OCR.h
 	<cv.h>
 	<highgui.h>
 	<ml.h>
 	<stdio.h>
 	<ctype.h>
-	<iostream>
 	<fstream>
 	"opencv2/imgproc/imgproc.hpp"
 
