@@ -7,8 +7,7 @@
  *
  */
 
- /* Modified by Vikram.M.A */
-
+#include  <vector>
 #include "OCR.h"
 
 /// <summary>
@@ -27,7 +26,7 @@ void OCR::getData()
 	char ch;
 	int i,j;
 
-	for(i =0; i<classes; i++){ //26
+	for(i = 0; i < classes; i++){ //26
 	    //Read the corresponding character for current sample being processed into ch.
 	    sprintf(dataFile,"%s%d/data.txt",file_path, i);
 	    labelStream.open(dataFile);
@@ -85,18 +84,27 @@ void OCR::train()
 ///     If its non-zero then the result is printed onto std out.
 /// </param>
 /// <returns> Result after classifying.  </returns>
-float OCR::classify(IplImage* img, int showResult)
+float* OCR::classify(IplImage* img, int showResult, int* resultSize)
 {
-	float result;
-    preprocessPara(img, size, size, 1);
+	float *result;
+    result = preprocessPara(img, size, size, showResult, resultSize);
 	return result;
 
 }
 
-void OCR::print(IplImage prs_image)
+/// <summary>
+///     Classifies the given prs_image by running k-nearest algorithm and prints the result.
+/// </summary>
+/// <param name="prs_image">
+///     IplImage to be classified.
+/// </param>
+/// <param name="showResult">
+///     If its 1, then prints result after classifying.
+/// </param>
+/// <returns> Result after classifying given image. </returns>
+float OCR::print(IplImage prs_image, int showResult)
 {
     float result;
-    int showResult = 1;
     CvMat data;
     CvMat* nearest=cvCreateMat(1,K,CV_32FC1);
     //Set data
@@ -107,24 +115,21 @@ void OCR::print(IplImage prs_image)
 	row1 = cvReshape( &data, &row_header, 0, 1 );
 
 	result=knn->find_nearest(row1,K,0,0,nearest,0);
-	char r = result;
-	int accuracy=0;
-	for(int i=0;i<K;i++){
-		if( nearest->data.fl[i] == result)
+	if(showResult == 1)
+	{
+	    char r = result;
+        int accuracy=0;
+        for(int i=0;i<K;i++)
+        {
+            if( nearest->data.fl[i] == result)
                     accuracy++;
+        }
+        float pre=100*((float)accuracy/(float)K);
+        printf("|\t%c\t| \t%.2f%%  \t| \t%d of %d \t",r,pre,accuracy,K);
+        printf(" \n---------------------------------------------------------------\n");
 	}
-	float pre=100*((float)accuracy/(float)K);
-	if(showResult==1){
-		printf("|\t%c\t| \t%.2f%%  \t| \t%d of %d \t",r,pre,accuracy,K);
-	}
-//	printf("others\t");
-//	for(int i=0; i<K; i++)
-//	{
-//	    char c = nearest->data.fl[i];
-//	    printf("%c", c);
-//	}
 
-	printf(" \n---------------------------------------------------------------\n");
+	return result;
 }
 
 /// <summary>
@@ -254,7 +259,8 @@ void OCR::findY(IplImage* imgSrc,int* min, int* max)
 ///     Source image for which bouding box has to be found.
 /// </params>
 /// <returns> Bounding box as CvRect. </returns>
-CvRect OCR::findBB(IplImage* imgSrc){
+CvRect OCR::findBB(IplImage* imgSrc)
+{
 	CvRect aux;
 	int xmin, xmax, ymin, ymax;
 	xmin=xmax=ymin=ymax=0;
@@ -295,7 +301,6 @@ IplImage OCR::preprocessing(IplImage* imgSrc,int new_width, int new_height, int 
 	//Find bounding box
 	bb=findBB(imgSrc);
 
-
 	//Get bounding box data and no with aspect ratio, the x and y can be corrupted
 	cvGetSubRect(imgSrc, &data, cvRect(bb.x, bb.y, bb.width, bb.height));
 
@@ -307,22 +312,18 @@ IplImage OCR::preprocessing(IplImage* imgSrc,int new_width, int new_height, int 
 	//Copy de data in center of image
 	int x=(int)floor((float)(size-bb.width)/2.0f);
 	int y=(int)floor((float)(size-bb.height)/2.0f);
-	//TODO: here x and y can be replaced by 0!
-
 
 	cvGetSubRect(result, &dataA, cvRect(x,y,bb.width, bb.height));
-
 	cvCopy(&data, &dataA, NULL);
+
 	//Scale result
-
-
 	scaledResult=cvCreateImage( cvSize( new_width, new_height ), 8, 1 );
 	cvResize(result, scaledResult, CV_INTER_NN);
 
 	//Return processed data
 	if(printResult == 1)
 	{
-	   print(*scaledResult);
+	   print(*scaledResult, printResult);
 	}
 
 	return *scaledResult;
@@ -331,7 +332,7 @@ IplImage OCR::preprocessing(IplImage* imgSrc,int new_width, int new_height, int 
 
 /// <summary>
 ///     Given image with paragraph of characters,
-///     finds bounding box, resizes it to new_width and new_height, and if printResult is non-zero, prints result for each character.
+///     finds bounding box, resizes it to new_width and new_height, and if printResult is 1, prints result for each character.
 /// </summary>
 /// <params name="imsSrc">
 ///     Source image which has to be processed.
@@ -343,15 +344,20 @@ IplImage OCR::preprocessing(IplImage* imgSrc,int new_width, int new_height, int 
 ///     Height of the image to be used for processing.
 /// </params>
 /// <params name="printResult">
-///     Indicates whether result has be printed, if its non-zero result are printed after running k-neares algorithm.
+///     Indicates whether result has be printed, if its 1, result are printed after running k-neares algorithm.
 /// </params>
-/// <returns> Nothing. </returns>
-void OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int printResult)
+/// <params name="resultSize">
+///     Number of resulting character identified, size of the array to which result will be pointing to.
+/// </params>
+/// <returns> Pointer to array of result. </returns>
+float* OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int printResult, int* resultSize)
 {
 	int minY, maxY;
     int i;
 	int minYFound=0;
-
+	float result;
+	vector<float> resultVector;
+	float* resultPointer;
 	CvMat data;
 	CvScalar maxVal=cvRealScalar(imgSrc->width * 255);
 	CvScalar val=cvRealScalar(0);
@@ -416,7 +422,8 @@ void OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int pr
                         }
                         //Some data was found previosly but current column 'j' doesn't have any data.
                         // so from minY to maxY and minX to maxX is the bounding box of character!
-                        process(imgSrc, new_width, new_height, printResult, cvRect(minX, minY, maxX-minX, maxYp-minY));
+                        result = process(imgSrc, new_width, new_height, printResult, cvRect(minX, minY, maxX-minX, maxYp-minY));
+                        resultVector.push_back(result); // after finding each result push the result to the vector.
 
 //	CvPoint pt1,pt2;
 //	pt1.x = minX;
@@ -454,11 +461,15 @@ void OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int pr
         }
 	//If exit from loop was because max height was reached, but minFound has been set, then process from minFound till height.
 	//This will not happen in the ideal examples I take :)
-	//}
-	//Find bounding box
-	//bb=findBB(imgSrc);
+	*resultSize = resultVector.size();
+	resultPointer = new float[*resultSize];
+	int k;
+	for(k = 0; k < *resultSize; k++)
+	{
+	    *(resultPointer+k) = resultVector[k];
+	}
 
-
+	return resultPointer;
 }
 
 /// <summary>
@@ -478,8 +489,8 @@ void OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int pr
 /// <params name="printResult">
 ///     Indicates whether result has be printed, if its non-zero result are printed after running k-neares algorithm.
 /// </params>
-/// <returns> Nothing. </returns>
-void OCR::process(IplImage* imgSrc, int new_width, int new_height, int printResult, CvRect bb)
+/// <returns> Result after classifying image. </returns>
+float OCR::process(IplImage* imgSrc, int new_width, int new_height, int printResult, CvRect bb)
 {
     IplImage* result;
 	IplImage* scaledResult;
@@ -506,8 +517,5 @@ void OCR::process(IplImage* imgSrc, int new_width, int new_height, int printResu
 	scaledResult=cvCreateImage( cvSize( new_width, new_height ), 8, 1 );
 	cvResize(result, scaledResult, CV_INTER_NN);
 	//Return processed data
-	if(printResult == 1)
-	{
-	   print(*scaledResult);
-	}
+	return print(*scaledResult, printResult);
 }

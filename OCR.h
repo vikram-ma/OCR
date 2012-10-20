@@ -30,7 +30,7 @@ using namespace std;
 
 class OCR{
 	public:
-		float classify(IplImage* img,int showResult);
+		float* classify(IplImage* img,int showResult, int* size);
 		OCR (char* path, int classes, int samples);
 		//void test();
 	private:
@@ -49,8 +49,8 @@ class OCR{
 		void findY(IplImage* imgSrc,int* min, int* max);
 		void findX(IplImage* imgSrc,int* min, int* max);
 		void test();
-		void print(IplImage prs_image);
-		void process(IplImage* imgSrc, int new_width, int new_height, int printResult, CvRect bb);
-		void preprocessPara(IplImage* src, int new_width, int new_height, int printResult);
+		float print(IplImage prs_image, int printResult);
+		float process(IplImage* imgSrc, int new_width, int new_height, int printResult, CvRect bb);
+		float* preprocessPara(IplImage* src, int new_width, int new_height, int printResult, int* size);
 };
 #endif //OCR_H_INCLUDED
