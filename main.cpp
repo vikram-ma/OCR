@@ -9,7 +9,7 @@
 
 int main( int argc, char** argv )
 {
-    IplImage* imagev = cvLoadImage("../sampleUppercase.pbm", 0);
+    IplImage* imagev = cvLoadImage("./sampleUppercase.pbm", 0);
 	//////////////////
 	//My OCR
 	//////////////////
