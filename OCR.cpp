@@ -110,7 +110,6 @@ void OCR::print(IplImage prs_image)
 
 	result=knn->find_nearest(row1,K,0,0,nearest,0);
 	char r = result;
-	//printf("%c  ",r);
 	int accuracy=0;
 	for(int i=0;i<K;i++){
 		if( nearest->data.fl[i] == result)
