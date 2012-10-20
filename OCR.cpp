@@ -443,17 +443,32 @@ void OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int pr
                     }
                     else if(minXFound == 1)
                     {
+                        int maxYp;
+
+                        CvScalar maxValyS = cvRealScalar((maxX-minX)*255);
+                        CvScalar valyS = cvRealScalar(0);
                         //printf("minX = %d, maxX = %d\n", minX, maxX);
                         cout<< "Column has been processed minX " << minX <<" maxX "<< maxX << endl;
+                        // from minx to maxx and miny to maxy
+                        for(int k=maxY-1; k >= minY; k--)
+                        {
+                            cvGetSubRect(imgSrc, &data, cvRect(minX, k, maxX-minX,1));
+                            valyS = cvSum(&data);
+                            if(valyS.val[0] < maxValyS.val[0])
+                            {
+                                maxYp = k+1;
+                                break;
+                            }
+                        }
                         //Some data was found previosly but current column 'j' doesn't have any data.
                         // so from minY to maxY and minX to maxX is the bounding box of character!
-                        process(imgSrc, new_width, new_height, printResult, cvRect(minX, minY, maxX-minX, maxY-minY));
+                        process(imgSrc, new_width, new_height, printResult, cvRect(minX, minY, maxX-minX, maxYp-minY));
 
 	CvPoint pt1,pt2;
 	pt1.x = minX;
 	pt1.y = minY;
 	pt2.x = minX;
-	pt2.y = maxY;
+	pt2.y = maxYp;
 	cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
 
 	pt1.x = maxX;
@@ -468,8 +483,8 @@ void OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int pr
 
     cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
 
-    pt1.y = maxY;
-    pt2.y = maxY;
+    pt1.y = maxYp;
+    pt2.y = maxYp;
     cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
 
 	cvNamedWindow("scaled result", CV_WINDOW_AUTOSIZE);
@@ -518,7 +533,7 @@ void OCR::process(IplImage* imgSrc, int new_width, int new_height, int printResu
 	int x=(int)floor((float)(size-bb.width)/2.0f);
 	int y=(int)floor((float)(size-bb.height)/2.0f);
 	//TODO: here x and y can be replaced by 0!
-	cvGetSubRect(result, &dataA, cvRect(0,0,bb.width, bb.height));
+	cvGetSubRect(result, &dataA, cvRect(x,y,bb.width, bb.height));
 	cvCopy(&data, &dataA, NULL);
 	//Scale result
 	scaledResult=cvCreateImage( cvSize( new_width, new_height ), 8, 1 );

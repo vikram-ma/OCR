@@ -41,7 +41,7 @@ class OCR{
 		CvMat* trainData;
 		CvMat* trainClasses;
 		int size;
-		static const int K=3;
+		static const int K=1;
 		CvKNearest *knn;
 		void getData();
 		void train();
