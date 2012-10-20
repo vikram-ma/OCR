@@ -20,7 +20,6 @@
 #include <ml.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <iostream>
 #include <fstream>
 
 #include "opencv2/imgproc/imgproc.hpp"

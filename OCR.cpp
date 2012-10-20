@@ -296,7 +296,6 @@ IplImage OCR::preprocessing(IplImage* imgSrc,int new_width, int new_height, int 
 	CvMat data;
 	CvMat dataA;
 	CvRect bb;//bounding box
-	CvRect bba;//bounding box maintain aspect ratio
 
 	//Find bounding box
 	bb=findBB(imgSrc);
@@ -327,7 +326,6 @@ IplImage OCR::preprocessing(IplImage* imgSrc,int new_width, int new_height, int 
 	}
 
 	return *scaledResult;
-
 }
 
 /// <summary>
@@ -473,9 +471,8 @@ float* OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int 
 }
 
 /// <summary>
-///     Given image single character and bounding box,
-///     resizes it to new_width and new_height, and if printResult is non-zero, prints result for each character after running
-///     k-nearest algorithm.
+///     Given image of single character and bounding box,
+///     resizes it to new_width and new_height, and if printResult is 1, prints result after running k-nearest algorithm.
 /// </summary>
 /// <params name="imsSrc">
 ///     Source image which has to be processed.
