@@ -24,12 +24,10 @@ void OCR::getData()
 	int i,j;
 
 	for(i =0; i<classes; i++){ //26
-	    //outStringStream << file_path << i <<"/data.txt";
 	    sprintf(dataFile,"%s%d/data.txt",file_path, i);
 	    labelStream.open(dataFile);
 	    labelStream >> ch;
 	    labelStream.close();
-	    //std::cout << "read character from file "<< dataFile <<" : " << ch <<std::endl;
 		for( j = 0; j< train_samples; j++){ //3
 
 			//Load file
@@ -44,14 +42,7 @@ void OCR::getData()
 				//exit(-1);
 			}
 			//process file
-			//printf("preprocessing for %c" ,ch);
 			prs_image = preprocessing(src_image, size, size);
-
-//			cvNamedWindow("ss", CV_WINDOW_AUTOSIZE);
-//    cvShowImage("ss",&prs_image);
-//    cvWaitKey(0);
-//    cvDestroyWindow("ss");
-			//cout << "pre-processing finished" << endl;
 			//Set class label
 			cvGetRow(trainClasses, &row, i*train_samples + j);
 			cvSet(&row, cvRealScalar(ch));
@@ -79,24 +70,14 @@ void OCR::train()
 
 float OCR::classify(IplImage* img, int showResult)
 {
-
-
 	float result;
-	//process file
-	//preprocessing(img, size, size, 1);
-
-	preprocessPara(img, size, size, 1);
+    preprocessPara(img, size, size, 1);
 	return result;
 
 }
 
 void OCR::print(IplImage prs_image)
 {
-    //cv::imshow("ss", prs_image);
-//    cvNamedWindow("ss", CV_WINDOW_AUTOSIZE);
-//    cvShowImage("ss",&prs_image);
-//    cvWaitKey(0);
-//    cvDestroyWindow("ss");
     float result;
     int showResult = 1;
     CvMat data;
@@ -117,15 +98,14 @@ void OCR::print(IplImage prs_image)
 	}
 	float pre=100*((float)accuracy/(float)K);
 	if(showResult==1){
-		printf("|\t%c\t| \t%.2f%%  \t| \t%d of %d \t|",r,pre,accuracy,K);
-
+		printf("|\t%c\t| \t%.2f%%  \t| \t%d of %d \t",r,pre,accuracy,K);
 	}
-	printf("others\t");
-	for(int i=0; i<K; i++)
-	{
-	    char c = nearest->data.fl[i];
-	    printf("%c", c);
-	}
+//	printf("others\t");
+//	for(int i=0; i<K; i++)
+//	{
+//	    char c = nearest->data.fl[i];
+//	    printf("%c", c);
+//	}
 
 	printf(" \n---------------------------------------------------------------\n");
 }
@@ -198,7 +178,6 @@ void OCR::findX(IplImage* imgSrc,int* min, int* max)
 	CvMat data;
 	CvScalar maxVal=cvRealScalar(imgSrc->height * 255);
 	CvScalar val=cvRealScalar(0);
-	//cout << "width of the image " << imgSrc->width << endl;
 	//For each col sum, if sum < width*255 then we find the min
 	//then continue to end to search the max, if sum< width*255 then is new max
 	for (i=0; i< imgSrc->width; i++){
@@ -215,11 +194,6 @@ void OCR::findX(IplImage* imgSrc,int* min, int* max)
 			}
 
 		}
-		else if(minFound == 1)
-        {
-
-            //return;
-        }
 	}
 }
 
@@ -247,61 +221,23 @@ void OCR::findY(IplImage* imgSrc,int* min, int* max)
 				minFound= 1;
 			}
 		}
-		else if(minFound == 1)
-        {
-            //return;
-        }
 	}
 }
 
 CvRect OCR::findBB(IplImage* imgSrc){
-    //cout << "Finding BB" << endl;
 	CvRect aux;
 	int xmin, xmax, ymin, ymax;
 	xmin=xmax=ymin=ymax=0;
 
 	findX(imgSrc, &xmin, &xmax);
 	findY(imgSrc, &ymin, &ymax);
-	//printf("minX = %d, maxX = %d\n", xmin, xmax);
-//	CvPoint pt1,pt2;
-//	pt1.x = xmin;
-//	pt1.y = 0;
-//	pt2.x = xmin;
-//	pt1.y = imgSrc->height;
-//	cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
-//
-//	pt1.x = xmax;
-//	pt2.x = xmax;
-//
-//    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
-//
-//    pt1.x = 0;
-//    pt1.y = ymin;
-//    pt2.x = imgSrc->width;
-//    pt2.y = ymin;
-//
-//    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
-//
-//    pt1.y = ymax;
-//    pt2.y = ymax;
-//    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
-//
-//	cvNamedWindow("scaled result", CV_WINDOW_AUTOSIZE);
-//    cvShowImage("scaled result",imgSrc);
-//
-//    cvWaitKey(0);
-//    cvDestroyWindow("scaled result");
-
 	aux=cvRect(xmin, ymin, xmax-xmin, ymax-ymin);
 
 	return aux;
-
 }
-
 
 IplImage OCR::preprocessing(IplImage* imgSrc,int new_width, int new_height, int printResult)
 {
-    //cout << "pre-processing the data" << endl;
 	IplImage* result;
 	IplImage* scaledResult;
 
@@ -329,43 +265,13 @@ IplImage OCR::preprocessing(IplImage* imgSrc,int new_width, int new_height, int 
 
 
 	cvGetSubRect(result, &dataA, cvRect(x,y,bb.width, bb.height));
-	//cout << "Got 2nd sub rect" << endl;
 
 	cvCopy(&data, &dataA, NULL);
 	//Scale result
 
 
-	//cout<< "Scaling image" << endl;
 	scaledResult=cvCreateImage( cvSize( new_width, new_height ), 8, 1 );
 	cvResize(result, scaledResult, CV_INTER_NN);
-
-//	CvPoint pt1,pt2;
-//	pt1.x = 0;
-//	pt1.y = 0;
-//	pt2.x = 0;
-//	pt1.y = result->height;
-//	cvLine(result, pt1, pt2, CV_RGB(0, 0, 0));
-//
-//	pt1.x = bb.width;
-//	pt2.x = bb.width;
-//
-//    cvLine(result, pt1, pt2, CV_RGB(0, 0, 0));
-//
-//    pt1.x = 0;
-//    pt1.y = 0;
-//    pt2.x = result->width;
-//    pt2.y = 0;
-//
-//    cvLine(result, pt1, pt2, CV_RGB(0, 0, 0));
-//
-//    pt1.y = bb.height;
-//    pt2.y = bb.height;
-//    cvLine(result, pt1, pt2, CV_RGB(0, 0, 0));
-//
-//	cvNamedWindow("scaled result", CV_WINDOW_AUTOSIZE);
-//    cvShowImage("scaled result",result);
-//
-//    cvWaitKey(0);
 
 	//Return processed data
 	if(printResult == 1)
@@ -387,9 +293,7 @@ void OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int pr
 	CvScalar maxVal=cvRealScalar(imgSrc->width * 255);
 	CvScalar val=cvRealScalar(0);
 	//For each col sum, if sum < width*255 then we find the min
-	//then continue to end to search the max, if sum< width*255 then is new max
-	//cout<<"Height of the image" << imgSrc->height << endl;
-	//cout<<"Width of the image " << imgSrc->width << endl;
+	//then continue to end to search the max, if sum< width*255 then is new max.
         for (i=0; i< imgSrc->height; i++)
         {
             cvGetRow(imgSrc, &data, i);
@@ -405,15 +309,6 @@ void OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int pr
             }
             else if(minYFound == 1)
             {
-                cout << "Rows has been processed min Y " << minY << " maxY " << maxY << endl;
-//CvPoint p1,p2;
-//p1.x = 0;
-//p1.y = minY;
-//p2.x = imgSrc->width;
-//p2.y = maxY;
-
-//cvLine(imgSrc, p1, p2, CV_RGB(0, 0, 0));
-
                 //some data was found previously, but current row 'i' doesn't have any data.
                 //So process from row 'minY' till row maxY
                 int j;
@@ -446,8 +341,7 @@ void OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int pr
 
                         CvScalar maxValyS = cvRealScalar((maxX-minX)*255);
                         CvScalar valyS = cvRealScalar(0);
-                        //printf("minX = %d, maxX = %d\n", minX, maxX);
-                        cout<< "Column has been processed minX " << minX <<" maxX "<< maxX << endl;
+                        //cout<< "Column has been processed minX " << minX <<" maxX "<< maxX << endl;
                         // from minx to maxx and miny to maxy
                         for(int k=maxY-1; k >= minY; k--)
                         {
@@ -463,35 +357,33 @@ void OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int pr
                         // so from minY to maxY and minX to maxX is the bounding box of character!
                         process(imgSrc, new_width, new_height, printResult, cvRect(minX, minY, maxX-minX, maxYp-minY));
 
-	CvPoint pt1,pt2;
-	pt1.x = minX;
-	pt1.y = minY;
-	pt2.x = minX;
-	pt2.y = maxYp;
-	cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
-
-	pt1.x = maxX;
-	pt2.x = maxX;
-
-    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
-
-    pt1.x = minX;
-    pt1.y = minY;
-    pt2.x = maxX;
-    pt2.y = minY;
-
-    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
-
-    pt1.y = maxYp;
-    pt2.y = maxYp;
-    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
-
-	cvNamedWindow("scaled result", CV_WINDOW_AUTOSIZE);
-    cvShowImage("scaled result",imgSrc);
-
-    cvWaitKey(0);
-//    cvDestroyWindow("scaled result");
-                        //cvRectangle(imgSrc,cvPoint1, cvPoint2, CV_RGB(0,0,255), 2);
+//	CvPoint pt1,pt2;
+//	pt1.x = minX;
+//	pt1.y = minY;
+//	pt2.x = minX;
+//	pt2.y = maxYp;
+//	cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
+//
+//	pt1.x = maxX;
+//	pt2.x = maxX;
+//
+//    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
+//
+//    pt1.x = minX;
+//    pt1.y = minY;
+//    pt2.x = maxX;
+//    pt2.y = minY;
+//
+//    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
+//
+//    pt1.y = maxYp;
+//    pt2.y = maxYp;
+//    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
+//
+//	cvNamedWindow("scaled result", CV_WINDOW_AUTOSIZE);
+//    cvShowImage("scaled result",imgSrc);
+//
+//    cvWaitKey(0);
                         minXFound = 0;
                     }
                 }
@@ -515,11 +407,7 @@ void OCR::process(IplImage* imgSrc, int new_width, int new_height, int printResu
 
 	CvMat data;
 	CvMat dataA;
-	//CvRect bb;//bounding box
 	CvRect bba;//boundinb box maintain aspect ratio
-
-	//Find bounding box
-	//bb=findBB(imgSrc);
 
 	//Get bounding box data and no with aspect ratio, the x and y can be corrupted
 	cvGetSubRect(imgSrc, &data, cvRect(bb.x, bb.y, bb.width, bb.height));
@@ -537,51 +425,9 @@ void OCR::process(IplImage* imgSrc, int new_width, int new_height, int printResu
 	//Scale result
 	scaledResult=cvCreateImage( cvSize( new_width, new_height ), 8, 1 );
 	cvResize(result, scaledResult, CV_INTER_NN);
-
-
-CvPoint cvP1;
-                CvPoint cvP2;
-//                cvP1.x = 0;
-//                cvP1.y = 0;
-//                cvP2.x = 0;
-//                cvP2.y = bb.height;
-//                cvLine(result, cvP1, cvP2, CV_RGB(0, 0, 0));
-//
-//                cvP1.x = bb.width;
-//                cvP2.x = bb.width;
-//                cvLine(result, cvP1, cvP2, CV_RGB(0, 0, 0));
-
-                        //(*minX, *minY);
-                        //cvP1.x = 0;
-                        //cvP1.y = bb.height;
-                         //(*maxX, *maxY);
-                        //cvP2.x = bb.width;
-                        //cvP1.y = bb.height;
-                        //cvP2.y = bb.height;
-//                        cvLine(result, cvP1, cvP2, CV_RGB(0, 0, 0));
-
-                        //cvP1.y = bb.height;
-                        //cvP2.y = bb.height;
-                        //cvLine(result, cvP1, cvP2, CV_RGB(0, 0, 0));
-
-                        //cvNamedWindow("final result", CV_WINDOW_AUTOSIZE);
-                        //cvShowImage("final result",result);
-
-                        //cvWaitKey(0);
-                        //cvDestroyWindow("final result");
-//
-//                        cvNamedWindow("scaled result", CV_WINDOW_AUTOSIZE);
-//                        cvShowImage("scaled result",scaledResult);
-//
-//                        cvWaitKey(0);
-//                        cvDestroyWindow("scaled result");
 	//Return processed data
 	if(printResult == 1)
 	{
 	   print(*scaledResult);
 	}
-
-	//return *scaledResult;
-
 }
-
