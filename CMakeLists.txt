@@ -1,5 +1,5 @@
 PROJECT( OCR )
 FIND_PACKAGE( OpenCV REQUIRED )
 
-ADD_EXECUTABLE( OCR main.cpp basicOCR.cpp preprocessing.cpp )
+ADD_EXECUTABLE( OCR main.cpp OCR.cpp)
 TARGET_LINK_LIBRARIES( OCR ${OpenCV_LIBS} )
