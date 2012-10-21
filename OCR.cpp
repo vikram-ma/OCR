@@ -11,7 +11,7 @@
 #include "OCR.h"
 
 /// <summary>
-///     reads the sample images and associated charaters into trainClasses and trainData respectively.
+///     Reads the sample images and associated charaters into trainClasses and trainData respectively.
 /// </summary>
 /// <returns> Nothing. </returns>
 void OCR::getData()
@@ -26,25 +26,29 @@ void OCR::getData()
 	char ch;
 	int i,j;
 
-	for(i = 0; i < classes; i++){ //26
+	for(i = 0; i < classes; i++)
+	{ //26
 	    //Read the corresponding character for current sample being processed into ch.
 	    sprintf(dataFile,"%s%d/data.txt",file_path, i);
 	    labelStream.open(dataFile);
 	    labelStream >> ch;
 	    labelStream.close();
-		for( j = 0; j< train_samples; j++){ //3
+		for( j = 0; j< train_samples; j++)
+		{ //3
 			//Load file
 			//get the path of image for training into file.
 			if(j<10)
 				sprintf(file,"%s%d/%d0%d.pbm",file_path, i, i, j);
-
 			else
 				sprintf(file,"%s%d/%d%d.pbm",file_path, i, i, j);
+
 			src_image = cvLoadImage(file,0);
-			if(!src_image){
+			if(!src_image)
+			{
 				printf("Error: Cant load image %s\n", file);
 				//exit(-1);
 			}
+
 			//process file
 			prs_image = preprocessing(src_image, size, size);
 			//Set class label
@@ -75,21 +79,20 @@ void OCR::train()
 }
 
 /// <summary>
-///     Classifies the given img and returns the result, if showResult is non-zero then result is printed on std out before returning.
+///     Classifies the given img and returns the result, if showResult is 1 then result is printed on std out before returning.
 /// </summary>
 /// <param name="img">
 ///     IplImage to be classified.
 /// </param>
 /// <param name="showResult">
-///     If its non-zero then the result is printed onto std out.
+///     If its 1 then the result is printed onto std out.
 /// </param>
-/// <returns> Result after classifying.  </returns>
+/// <returns> Result after classifying. </returns>
 float* OCR::classify(IplImage* img, int showResult, int* resultSize)
 {
 	float *result;
-    result = preprocessPara(img, size, size, showResult, resultSize);
+	result = preprocessPara(img, size, size, showResult, resultSize);
 	return result;
-
 }
 
 /// <summary>
@@ -122,8 +125,9 @@ float OCR::print(IplImage prs_image, int showResult)
         for(int i=0;i<K;i++)
         {
             if( nearest->data.fl[i] == result)
-                    accuracy++;
+                accuracy++;
         }
+
         float pre=100*((float)accuracy/(float)K);
         printf("|\t%c\t| \t%.2f%%  \t| \t%d of %d \t",r,pre,accuracy,K);
         printf(" \n---------------------------------------------------------------\n");
@@ -159,8 +163,6 @@ OCR::OCR(char* path, int classe, int samples)
 
 	//train
 	train();
-	//Test
-	//test();
 
 	printf(" ---------------------------------------------------------------\n");
 	printf("|\tClass\t|\tPrecision\t|\tAccuracy\t|\n");
@@ -196,7 +198,8 @@ void OCR::findX(IplImage* imgSrc,int* min, int* max)
 	CvScalar val=cvRealScalar(0);
 	//For each col sum, if sum < width*255 then we find the min
 	//then continue to end to search the max, if sum< width*255 then is new max
-	for (i=0; i< imgSrc->width; i++){
+	for (i=0; i< imgSrc->width; i++)
+	{
 	    val = cvRealScalar(0);
 		cvGetCol(imgSrc, &data, i);
 		val= cvSum(&data);
@@ -345,7 +348,7 @@ IplImage OCR::preprocessing(IplImage* imgSrc,int new_width, int new_height, int 
 ///     Indicates whether result has be printed, if its 1, result are printed after running k-neares algorithm.
 /// </params>
 /// <params name="resultSize">
-///     Number of resulting character identified, size of the array to which result will be pointing to.
+///     Number of resulting characters identified, size of the array to which result will be pointing to.
 /// </params>
 /// <returns> Pointer to array of result. </returns>
 float* OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int printResult, int* resultSize)
@@ -361,102 +364,103 @@ float* OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int 
 	CvScalar val=cvRealScalar(0);
 	//For each col sum, if sum < width*255 then we find the min
 	//then continue to end to search the max, if sum< width*255 then is new max.
-        for (i=0; i< imgSrc->height; i++)
-        {
-            cvGetRow(imgSrc, &data, i);
-            val= cvSum(&data);
-            if(val.val[0] < maxVal.val[0])
-            { // some data is found!
-                maxY = i;
-                if(!minYFound)
-                {
-                    minY = i;
-                    minYFound = 1;
-                }
-            }
-            else if(minYFound == 1)
+    for (i=0; i< imgSrc->height; i++)
+    {
+        cvGetRow(imgSrc, &data, i);
+        val= cvSum(&data);
+        if(val.val[0] < maxVal.val[0])
+        { // some data is found!
+            maxY = i;
+            if(!minYFound)
             {
-                //some data was found previously, but current row 'i' doesn't have any data.
-                //So process from row 'minY' till row maxY
-                int j;
-                int minX, maxX;
-                int minXFound=0;
-                //CvMat data;
-                CvScalar maxValx=cvRealScalar((maxY - minY) * 255);
-                CvScalar valx=cvRealScalar(0);
-                //For each col sum, if sum < width*255 then we find the min
-                //then continue to end to search the max, if sum< width*255 then is new max
-                for (j=0; j< imgSrc->width - 1; j++)
-                {
-                    valx=cvRealScalar(0);
-                    //instead of taking sum of entire column get sum of sub part of it.
-                    cvGetSubRect(imgSrc,&data, cvRect(j,minY,1,maxY-minY));
-                    //cvGetCol(imgSrc, &data, i);
-                    valx= cvSum(&data);
-                    if(valx.val[0] < maxValx.val[0])
-                    { //Some data found
-                        maxX= j;
-                        if(!minXFound){
-                            minX= j;
-                            minXFound= 1;
-                        }
-                    }
-                    else if(minXFound == 1)
-                    {
-                        int maxYp;
-
-                        CvScalar maxValyS = cvRealScalar((maxX-minX)*255);
-                        CvScalar valyS = cvRealScalar(0);
-                        // from minx to maxx and miny to maxy
-                        for(int k=maxY-1; k >= minY; k--)
-                        {
-                            cvGetSubRect(imgSrc, &data, cvRect(minX, k, maxX-minX,1));
-                            valyS = cvSum(&data);
-                            if(valyS.val[0] < maxValyS.val[0])
-                            {
-                                maxYp = k+1;
-                                break;
-                            }
-                        }
-                        //Some data was found previosly but current column 'j' doesn't have any data.
-                        // so from minY to maxY and minX to maxX is the bounding box of character!
-                        result = process(imgSrc, new_width, new_height, printResult, cvRect(minX, minY, maxX-minX, maxYp-minY));
-                        resultVector.push_back(result); // after finding each result push the result to the vector.
-
-//	CvPoint pt1,pt2;
-//	pt1.x = minX;
-//	pt1.y = minY;
-//	pt2.x = minX;
-//	pt2.y = maxYp;
-//	cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
-//
-//	pt1.x = maxX;
-//	pt2.x = maxX;
-//
-//    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
-//
-//    pt1.x = minX;
-//    pt1.y = minY;
-//    pt2.x = maxX;
-//    pt2.y = minY;
-//
-//    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
-//
-//    pt1.y = maxYp;
-//    pt2.y = maxYp;
-//    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
-//
-//	cvNamedWindow("scaled result", CV_WINDOW_AUTOSIZE);
-//    cvShowImage("scaled result",imgSrc);
-//
-//    cvWaitKey(0);
-                        minXFound = 0;
-                    }
-                }
-
-                minYFound = 0;
+                minY = i;
+                minYFound = 1;
             }
         }
+        else if(minYFound == 1)
+        {
+            //some data was found previously, but current row 'i' doesn't have any data.
+            //So process from row 'minY' till row maxY
+            int j;
+            int minX, maxX;
+            int minXFound=0;
+            //CvMat data;
+            CvScalar maxValx=cvRealScalar((maxY - minY) * 255);
+            CvScalar valx=cvRealScalar(0);
+            //For each col sum, if sum < width*255 then we find the min
+            //then continue to end to search the max, if sum< width*255 then is new max
+            for (j=0; j< imgSrc->width - 1; j++)
+            {
+                valx=cvRealScalar(0);
+                //instead of taking sum of entire column get sum of sub part of it.
+                cvGetSubRect(imgSrc,&data, cvRect(j,minY,1,maxY-minY));
+                //cvGetCol(imgSrc, &data, i);
+                valx= cvSum(&data);
+                if(valx.val[0] < maxValx.val[0])
+                { //Some data found
+                    maxX= j;
+                    if(!minXFound)
+                    {
+                        minX= j;
+                        minXFound= 1;
+                    }
+                }
+                else if(minXFound == 1)
+                {
+                    int maxYp;
+                    CvScalar maxValyS = cvRealScalar((maxX-minX)*255);
+                    CvScalar valyS = cvRealScalar(0);
+                    // from minx to maxx and miny to maxy
+                    for(int k=maxY-1; k >= minY; k--)
+                    {
+                        cvGetSubRect(imgSrc, &data, cvRect(minX, k, maxX-minX,1));
+                        valyS = cvSum(&data);
+                        if(valyS.val[0] < maxValyS.val[0])
+                        {
+                            maxYp = k+1;
+                            break;
+                        }
+                    }
+                    //Some data was found previosly but current column 'j' doesn't have any data.
+                    // so from minY to maxY and minX to maxX is the bounding box of character!
+                    result = process(imgSrc, new_width, new_height, printResult, cvRect(minX, minY, maxX-minX, maxYp-minY));
+                    resultVector.push_back(result); // after finding each result push the result to the vector.
+
+                    //	CvPoint pt1,pt2;
+                    //	pt1.x = minX;
+                    //	pt1.y = minY;
+                    //	pt2.x = minX;
+                    //	pt2.y = maxYp;
+                    //	cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
+                    //
+                    //	pt1.x = maxX;
+                    //	pt2.x = maxX;
+                    //
+                    //    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
+                    //
+                    //    pt1.x = minX;
+                    //    pt1.y = minY;
+                    //    pt2.x = maxX;
+                    //    pt2.y = minY;
+                    //
+                    //    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
+                    //
+                    //    pt1.y = maxYp;
+                    //    pt2.y = maxYp;
+                    //    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
+                    //
+                    //	cvNamedWindow("scaled result", CV_WINDOW_AUTOSIZE);
+                    //    cvShowImage("scaled result",imgSrc);
+                    //
+                    //    cvWaitKey(0);
+
+                    minXFound = 0;
+                }
+            }
+
+            minYFound = 0;
+        }
+    }
 	//If exit from loop was because max height was reached, but minFound has been set, then process from minFound till height.
 	//This will not happen in the ideal examples I take :)
 	*resultSize = resultVector.size();
@@ -495,7 +499,6 @@ float OCR::process(IplImage* imgSrc, int new_width, int new_height, int printRes
 	CvMat data;
 	CvMat dataA;
 	CvRect bba;//bounding box maintain aspect ratio.
-
 	//Get bounding box data and no with aspect ratio, the x and y can be corrupted
 	cvGetSubRect(imgSrc, &data, cvRect(bb.x, bb.y, bb.width, bb.height));
 	//Create image with this data with width and height with aspect ratio 1
