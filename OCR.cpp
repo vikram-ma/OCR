@@ -128,9 +128,10 @@ float OCR::print(IplImage prs_image, int showResult)
                 accuracy++;
         }
 
-        float pre=100*((float)accuracy/(float)K);
-        printf("|\t%c\t| \t%.2f%%  \t| \t%d of %d \t",r,pre,accuracy,K);
-        printf(" \n---------------------------------------------------------------\n");
+        printf("%c ",r);
+//        float pre=100*((float)accuracy/(float)K);
+//        printf("|\t%c\t| \t%.2f%%  \t| \t%d of %d \t",r,pre,accuracy,K);
+//        printf(" \n---------------------------------------------------------------\n");
 	}
 
 	return result;
@@ -408,51 +409,67 @@ float* OCR::preprocessPara(IplImage* imgSrc, int new_width, int new_height, int 
                 else if(minXFound == 1)
                 {
                     int maxYp;
+                    int minYp;
+                    int minYpFound = 0;
                     CvScalar maxValyS = cvRealScalar((maxX-minX)*255);
                     CvScalar valyS = cvRealScalar(0);
                     // from minx to maxx and miny to maxy
-                    for(int k=maxY-1; k >= minY; k--)
+                    for(int k = minY; k <= maxY; k++)
                     {
                         cvGetSubRect(imgSrc, &data, cvRect(minX, k, maxX-minX,1));
                         valyS = cvSum(&data);
-                        if(valyS.val[0] < maxValyS.val[0])
+                        if(valyS.val[0] - maxValyS.val[0])
                         {
-                            maxYp = k+1;
-                            break;
+                            maxYp = k;
+                            if(minYpFound!=1)
+                            {
+                                minYp = k;
+                                minYpFound = 1;
+                            }
                         }
                     }
+//                    for(int k=maxY-1; k >= minY; k--)
+//                    {
+//                        cvGetSubRect(imgSrc, &data, cvRect(minX, k, maxX-minX,1));
+//                        valyS = cvSum(&data);
+//                        if(valyS.val[0] < maxValyS.val[0])
+//                        {
+//                            maxYp = k+1;
+//                            break;
+//                        }
+//                    }
                     //Some data was found previosly but current column 'j' doesn't have any data.
                     // so from minY to maxY and minX to maxX is the bounding box of character!
-                    result = process(imgSrc, new_width, new_height, printResult, cvRect(minX, minY, maxX-minX, maxYp-minY));
+                    result = process(imgSrc, new_width, new_height, printResult, cvRect(minX, minYp, maxX-minX, maxYp-minYp));
                     resultVector.push_back(result); // after finding each result push the result to the vector.
 
-                    //	CvPoint pt1,pt2;
-                    //	pt1.x = minX;
-                    //	pt1.y = minY;
-                    //	pt2.x = minX;
-                    //	pt2.y = maxYp;
-                    //	cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
-                    //
-                    //	pt1.x = maxX;
-                    //	pt2.x = maxX;
-                    //
-                    //    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
-                    //
-                    //    pt1.x = minX;
-                    //    pt1.y = minY;
-                    //    pt2.x = maxX;
-                    //    pt2.y = minY;
-                    //
-                    //    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
-                    //
-                    //    pt1.y = maxYp;
-                    //    pt2.y = maxYp;
-                    //    cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
-                    //
-                    //	cvNamedWindow("scaled result", CV_WINDOW_AUTOSIZE);
-                    //    cvShowImage("scaled result",imgSrc);
-                    //
-                    //    cvWaitKey(0);
+//                    	CvPoint pt1,pt2;
+//                    	pt1.x = minX;
+//                    	pt1.y = minYp;
+//                    	pt2.x = minX;
+//                    	pt2.y = maxYp;
+//                    	cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
+//
+//                    	pt1.x = maxX;
+//                    	pt2.x = maxX;
+//
+//                        cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
+//
+//                        pt1.x = minX;
+//                        pt1.y = minYp;
+//                        pt2.x = maxX;
+//                        pt2.y = minYp;
+//
+//                        cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
+//
+//                        pt1.y = maxYp;
+//                        pt2.y = maxYp;
+//                        cvLine(imgSrc, pt1, pt2, CV_RGB(0, 0, 0));
+//
+//                    	cvNamedWindow("scaled result", CV_WINDOW_AUTOSIZE);
+//                        cvShowImage("scaled result",imgSrc);
+//
+//                        cvWaitKey(0);
 
                     minXFound = 0;
                 }
